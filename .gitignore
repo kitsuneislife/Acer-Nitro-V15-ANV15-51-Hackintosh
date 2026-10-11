@@ -1,2 +1,6 @@
 .DS_Store
 *.log
+build/
+.cache/
+smbios*.json
+__pycache__/
