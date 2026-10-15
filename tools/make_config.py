@@ -46,9 +46,10 @@ KEXTS = [
     ("VoodooI2CHID.kext", True, "PIXA3848 HID-over-I2C touchpad"),
     ("RealtekRTL8111.kext", True, "Ethernet RTL8111"),
     ("BrightnessKeys.kext", True, "brightness hotkeys"),
-    ("SimpleMtkBtFw.kext", True, "MT7921 Bluetooth firmware loader (USB 04CA:3802)"),
-    ("SimpleMtkBtPatcher.kext", True, "MT7921 Bluetooth compatibility patches"),
+    ("SimpleMtkBtFw.kext", "installed", "MT7921 Bluetooth firmware loader (USB 04CA:3802)"),
+    ("SimpleMtkBtPatcher.kext", "installed", "MT7921 Bluetooth compatibility patches"),
 ]
+# "installed" in the enabled column: off in the installer, which needs nothing it does not use.
 
 BOOT_ARGS = [
     "-v",                    # verbose boot while the EFI is being validated
@@ -65,9 +66,11 @@ def load_bundle_plist(kext_dir: Path) -> dict:
         return plistlib.load(f)
 
 
-def kext_entries(kexts_dir: Path) -> list:
+def kext_entries(kexts_dir: Path, stage: str) -> list:
     entries, loaded_ids = [], set()
     for rel, enabled, comment in KEXTS:
+        if enabled == "installed":
+            enabled = stage == "installed"
         path = kexts_dir / rel
         if not path.is_dir():
             sys.exit(f"missing kext bundle: {path}")
@@ -144,7 +147,7 @@ def main() -> None:
 
     # Kernel
     k = c["Kernel"]
-    k["Add"] = kext_entries(oc / "Kexts")
+    k["Add"] = kext_entries(oc / "Kexts", a.stage)
     # No IONDRVSupport exclude, in either stage. nullmoth blocks it on desktops so the firmware
     # framebuffer does not take NVRMFB's display index, but here the panel is on the Intel iGPU and
     # macOS has no driver for it: the firmware framebuffer is the only thing that shows the panel,
