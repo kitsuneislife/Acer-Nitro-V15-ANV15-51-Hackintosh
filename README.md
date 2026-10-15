@@ -3,11 +3,23 @@
 This repo is about running macOS 15 Sequoia on the Acer Nitro V 15 ANV15-51. The goal is to use the
 laptop's own display and Wi-Fi, with no hardware swaps.
 
-> **Status: work in progress. None of this has been tested yet.**
-> A row in the [status table](#status) changes only after a successful test, and every changed
-> row links to its proof: a screenshot, a log, or the exact command.
+> **Status: work in progress.** Since 2026-10-15, Sequoia 15.8.1 runs on **bare metal** with the
+> OpenCore EFI built by `tools/build.sh` (`tools/make_config.py`). The VM plan below is the earlier
+> approach and is kept for reference.
 
-## Approach: a VM, not bare metal
+## Bare metal (current)
+
+Legend: ✅ works, ⚠️ partial, ❌ broken, ⏳ not tested yet.
+
+| Feature | Status | Notes |
+|---|---|---|
+| Boot to desktop (OpenCore on the Windows ESP, dual boot) | ✅ | The `EXITBS:START` hang was the CPU topology; see the `make_config.py` history |
+| RTX 3050 with the [nullmoth driver](https://github.com/nullmoth/nvidia-macos-driver) 2.0.2 | ✅ | Metal on the dGPU |
+| Internal display | ⚠️ | Firmware framebuffer, not accelerated |
+| Intel iGPU acceleration (NMXGPU i915) | ⏳ | In progress in [kitsuneislife/nmx-intel](https://github.com/kitsuneislife/nmx-intel): i915 initializes, the display bridge is the current blocker |
+| Wi-Fi (MT7921), battery, sleep | ⏳ | |
+
+## Earlier approach: a VM, not bare metal
 
 With bare metal, Sequoia can't meet the two main requirements on this laptop (details in
 [docs/bare-metal.md](docs/bare-metal.md)):
