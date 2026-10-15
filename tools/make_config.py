@@ -145,15 +145,11 @@ def main() -> None:
     # Kernel
     k = c["Kernel"]
     k["Add"] = kext_entries(oc / "Kexts")
+    # No IONDRVSupport exclude, in either stage. nullmoth blocks it on desktops so the firmware
+    # framebuffer does not take NVRMFB's display index, but here the panel is on the Intel iGPU and
+    # macOS has no driver for it: the firmware framebuffer is the only thing that shows the panel,
+    # and excluding it leaves the built-in screen dark (nullmoth-setup.sh turns it off on such laptops).
     k["Block"] = []
-    if a.stage == "installed":
-        # nullmoth: otherwise the firmware framebuffer takes display index 0 from NVRMFB.
-        # Kept out of the installer stage, which runs on the firmware screen.
-        k["Block"].append({
-            "Arch": "Any", "Comment": "nullmoth: keep IONDRVSupport off the display index",
-            "Enabled": True, "Identifier": "com.apple.iokit.IONDRVSupport",
-            "MaxKernel": "", "MinKernel": "", "Strategy": "Exclude",
-        })
     k["Force"] = []
     k["Patch"] = []
     # macOS has no Raptor Lake CPUID; report Comet Lake (family 6 model 0xA5) as Dortania and
@@ -169,7 +165,7 @@ def main() -> None:
         "PanicNoKextDump": True,
         "PowerTimeoutKernelPanic": True,
         "ProvideCurrentCpuInfo": True,   # hybrid P/E-core topology and TSC frequency
-        "XhciPortLimit": False,          # USB is mapped with a kext instead
+        "XhciPortLimit": False,          # every connectable PCH port is at address 15 or lower (ACPI _UPC)
     })
 
     # Misc
