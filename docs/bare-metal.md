@@ -28,9 +28,11 @@ display and the internal Wi-Fi, both depend on unfinished projects that don't wo
 
 - **The BIOS is locked down.** It's an Insyde BIOS with no Advanced menu, so CFG Lock and DVMT
   can't be changed without a BIOS mod. Resizable BAR is already on.
-- **The boot may hang at `EXITBS:START`.** This was reported on two nearly identical laptops
-  (nullmoth/1401 #26, nvidia-macos-driver #109). It may just be a missing display after the iGPU
-  is disabled.
+- **The boot hung at `EXITBS:START` (fixed).** Two causes, found on 2026-10-15. ProvideCurrentCpuInfo
+  sets `cpuid_cores_per_package` to 128 on hybrid CPUs, but the i5-13420H reports 64 logical IDs in CPUID
+  leaf 1, so XNU divides by zero in `initTopoParms` before the console is up. The config now applies the
+  quirk's topology patches by hand, with 64. DevirtualiseMmio is off too, because the Insyde runtime
+  services fault on the devirtualised 0xFF000000 range (same as nullmoth/1401 #6).
 - **The NVIDIA driver is very young.** Reports include regressions between versions, panics and
   unreliable sleep.
 

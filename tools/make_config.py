@@ -61,6 +61,25 @@ BOOT_ARGS = [
 ]
 
 
+def kernel_patch(base: str, comment: str, find: str, replace: str, count: int) -> dict:
+    return {"Arch": "x86_64", "Base": base, "Comment": comment, "Count": count, "Enabled": True,
+            "Find": bytes.fromhex(find), "Identifier": "kernel", "Limit": 0, "Mask": b"",
+            "MaxKernel": "24.99.99", "MinKernel": "24.0.0", "Replace": bytes.fromhex(replace),
+            "ReplaceMask": b"", "Skip": 0}
+
+
+# The topology half of ProvideCurrentCpuInfo (OpenCore 1.0.8, CpuidPatches.c), without its _tsc_init
+# rewrite, and with cores per package = 64 instead of 128 so that
+# nPThreadsPerCore = cpuid_logical_per_package (64) / cpuid_cores_per_package = 1.
+TOPOLOGY_PATCHES = [
+    kernel_patch("_cpuid_set_info", "MSR 35h: 12 cores / 12 threads (hybrid CPU as thread=core)",
+                 "B9350000000F32", "B80C000C0031D2", 2),
+    kernel_patch("", "cpuid_cores_per_package = 64 (leaf 4 loop)", "C1EA1AFFC289", "BA4000000089", 1),
+    kernel_patch("_cpuid_set_info", "MSR 35h zero fallback: 8 cores / 12 threads", "B901000100", "B90C000800", 2),
+    kernel_patch("_x86_validate_topology", "Skip x86_validate_topology", "", "C3", 1),
+]
+
+
 def load_bundle_plist(kext_dir: Path) -> dict:
     with open(kext_dir / "Contents" / "Info.plist", "rb") as f:
         return plistlib.load(f)
@@ -128,7 +147,9 @@ def main() -> None:
     b["Patch"] = []
     b["Quirks"].update({
         "AvoidRuntimeDefrag": True,
-        "DevirtualiseMmio": True,
+        # Off: Booter devirtualises 0xFF000000 (SPI flash) and the Insyde runtime services fault on it
+        # (page fault at 0xFF0A004C about 1 s into boot; same as nullmoth/1401 #6).
+        "DevirtualiseMmio": False,
         "EnableSafeModeSlide": True,
         "EnableWriteUnprotector": False,
         "FixupAppleEfiImages": True,
@@ -154,7 +175,7 @@ def main() -> None:
     # and excluding it leaves the built-in screen dark (nullmoth-setup.sh turns it off on such laptops).
     k["Block"] = []
     k["Force"] = []
-    k["Patch"] = []
+    k["Patch"] = TOPOLOGY_PATCHES
     # macOS has no Raptor Lake CPUID; report Comet Lake (family 6 model 0xA5) as Dortania and
     # OpCore-Simplify do for Alder/Raptor Lake.
     k["Emulate"]["Cpuid1Data"] = bytes.fromhex("55060A00" + "00" * 12)
@@ -167,7 +188,10 @@ def main() -> None:
         "DisableIoMapper": True,         # VT-d stays on for Windows and Linux
         "PanicNoKextDump": True,
         "PowerTimeoutKernelPanic": True,
-        "ProvideCurrentCpuInfo": True,   # hybrid P/E-core topology and TSC frequency
+        # Off: replaced by TOPOLOGY_PATCHES. The quirk sets cpuid_cores_per_package to 128 on hybrid
+        # CPUs, and the i5-13420H reports 64 logical IDs in CPUID leaf 1, so XNU divides by zero in
+        # initTopoParms (smp_init) before the console is up and the boot hangs at EXITBS:START.
+        "ProvideCurrentCpuInfo": False,
         "XhciPortLimit": False,          # every connectable PCH port is at address 15 or lower (ACPI _UPC)
     })
 
