@@ -3,6 +3,10 @@
 This research was done in October 2026, before choosing the VM route. It covers what a classic
 OpenCore install on this laptop would mean.
 
+> **Note (2026-10-16):** the project went bare metal after all. The display verdict below no longer holds: the RTX
+> 3050 now composites the desktop with Metal and NMIntelFB shows it on the Intel panel (see the README and
+> [nmx-intel](https://github.com/kitsuneislife/nmx-intel)). Wi-Fi is still unsolved.
+
 **Verdict: not viable today.** Two parts this project can't do without, an accelerated internal
 display and the internal Wi-Fi, both depend on unfinished projects that don't work on Sequoia.
 
