@@ -7,6 +7,9 @@ OpenCore install on this laptop would mean.
 > 3050 now composites the desktop with Metal and NMIntelFB shows it on the Intel panel (see the README and
 > [nmx-intel](https://github.com/kitsuneislife/nmx-intel)). Wi-Fi is still unsolved.
 
+> **Note (2026-10-18):** Wi-Fi works too: flxxxxddd's AirportMtkWlan (a SimpleMtkWlan fork with the native Wi-Fi menu)
+> plus nmx-intel's patches. Upload and download both reach ~37 Mbit/s. See the README's Wi-Fi section.
+
 **Verdict: not viable today.** Two parts this project can't do without, an accelerated internal
 display and the internal Wi-Fi, both depend on unfinished projects that don't work on Sequoia.
 

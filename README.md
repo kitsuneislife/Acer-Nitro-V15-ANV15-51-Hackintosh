@@ -22,7 +22,7 @@ playback work, and it turns on by itself at boot. Details and patches: [nmx-inte
 | Battery status | ✅ |
 | Ethernet (RTL8111) | ✅ |
 | Audio (ALC245) | ⚠️ speakers detected |
-| Wi-Fi (MT7921) | ❌ no working driver |
+| Wi-Fi (MT7921): native Wi-Fi menu, 5 GHz, ~37 Mbit/s up and down | ✅ |
 | Bluetooth, sleep | ⏳ not tested yet |
 
 ## Drivers
@@ -33,9 +33,22 @@ playback work, and it turns on by itself at boot. Details and patches: [nmx-inte
 - **Input:** VoodooI2C + VoodooI2CHID
 - **Other:** ECEnabler, RealtekRTL8111, AMFIPass
 - **Graphics:** nullmoth's NVRM / NVAccel / NVRMFB (NVIDIA driver) and NMIntelFB (panel), installed in `/Library/Extensions`
+- **Wi-Fi:** AirportMtkWlan (see below), installed in `/Library/Extensions`
 
 `tools/build.sh` downloads pinned releases (SHA-256 checked, [tools/sources.tsv](tools/sources.tsv)), and
 `tools/make_config.py` writes `config.plist`. ACPI sources are in [acpi/](acpi/).
+
+## Wi-Fi
+
+The MediaTek MT7921 (`14c3:7961`) runs on [flxxxxddd's AirportMtkWlan](https://github.com/flxxxxddd/SimpleMtkWlan)
+(v1.5.0, built for Sequoia's IO80211) with five patches from nmx-intel. The most important one fixes the upload:
+the driver sent every data frame at the lowest fixed rate with block ack off, so upload was stuck at ~5 Mbit/s. It
+now matches the download. The Wi-Fi menu, Keychain joins and 5 GHz VHT80 all work. It isn't part of the EFI. Build
+it from source and install it in `/Library/Extensions` with nmx-intel's
+[`tools/wifi/build-airport.sh`](https://github.com/kitsuneislife/nmx-intel/blob/main/tools/wifi/build-airport.sh) and
+`install.sh airport`. The only EFI requirement is `DisableIoMapper`, which this config already sets. Holding Space
+in OpenCore and picking "Start once without NVIDIA driver" (`-nvoff`) also keeps the Wi-Fi driver off the card.
+Details: [nmx-intel/docs/knowledge/wifi.md](https://github.com/kitsuneislife/nmx-intel/blob/main/docs/knowledge/wifi.md).
 
 ## Not included
 
@@ -44,7 +57,7 @@ No Apple software and no SMBIOS identifiers: generate your own serial, MLB, ROM 
 ## Credits
 
 [OpenCore](https://github.com/acidanthera/OpenCorePkg) and acidanthera, [nullmoth](https://github.com/nullmoth/nvidia-macos-driver),
-VoodooI2C, [Dortania](https://dortania.github.io/). Research and education only; use at your own risk.
+VoodooI2C, [flxxxxddd](https://github.com/flxxxxddd/SimpleMtkWlan) and the SimpleMtkWlan authors, [Dortania](https://dortania.github.io/). Research and education only; use at your own risk.
 
 <div align="center">
   <img src="claude.png" width="300" height="300">
