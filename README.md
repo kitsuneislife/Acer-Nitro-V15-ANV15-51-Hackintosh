@@ -16,14 +16,16 @@ playback work, and it turns on by itself at boot. Details and patches: [nmx-inte
 
 | | |
 |---|---|
-| Graphics: accelerated desktop (RTX 3050, Metal 3) on the internal 1080p 144 Hz panel | ✅ |
+| Graphics: accelerated desktop (RTX 3050, Metal 3) on the internal 1080p 144 Hz panel, automatic at boot | ✅ |
+| Brightness | ✅ |
 | CPU (4P+4E, power management) | ✅ |
 | Keyboard, touchpad (I2C) | ✅ |
 | Battery status | ✅ |
 | Ethernet (RTL8111) | ✅ |
 | Audio (ALC245) | ⚠️ speakers detected |
 | Wi-Fi (MT7921): native Wi-Fi menu, 5 GHz, ~37 Mbit/s up and down | ✅ |
-| Bluetooth, sleep | ⏳ not tested yet |
+| Sleep | ❌ S3 resets the Intel display engine and the panel is not relit after wake; sleep is disabled |
+| Bluetooth | ⏳ not tested yet |
 
 ## Drivers
 
@@ -32,7 +34,7 @@ playback work, and it turns on by itself at boot. Details and patches: [nmx-inte
   BrightnessKeys, VoodooPS2
 - **Input:** VoodooI2C + VoodooI2CHID
 - **Other:** ECEnabler, RealtekRTL8111, AMFIPass
-- **Graphics:** nullmoth's NVRM / NVAccel / NVRMFB (NVIDIA driver) and NMIntelFB (panel), installed in `/Library/Extensions`
+- **Graphics:** nullmoth's NVRM / NVAccel / NVRMFB (NVIDIA driver 2.3.6, with the nmx-intel patches) and NMIntelFB (panel), installed in `/Library/Extensions`
 - **Wi-Fi:** AirportMtkWlan (see below), installed in `/Library/Extensions`
 
 `tools/build.sh` downloads pinned releases (SHA-256 checked, [tools/sources.tsv](tools/sources.tsv)), and
